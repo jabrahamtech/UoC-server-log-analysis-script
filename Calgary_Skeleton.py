@@ -1,5 +1,7 @@
 from datetime import datetime
 from collections import Counter
+import operator
+from collections import Counter
 
 class Parser:
     def __init__(self):
@@ -60,6 +62,16 @@ class Parser:
         request_list = []
         local_bytes = 0
         remote_bytes = 0
+        filename_list = []
+        html = 0
+        images = 0
+        sound = 0
+        video = 0
+        formatted = 0
+        dynamic = 0
+        others = 0
+        unique_list = []
+        unique_bytes = {}
 
         for line in logFile:
             elements = line.split()
@@ -88,17 +100,47 @@ class Parser:
             responseType = checkResCode(self,responseCode)
             #list_codes.append(responseType)
             if responseType == 'Successful':
-                if sourceAddress == 'local':
-                    try:
-                        local_bytes += int(replySizeInBytes)
-                    except:
-                        total_bytes
-                if sourceAddress == 'remote':
-                    try:
-                        remote_bytes += int(replySizeInBytes)
-                    except:
-                        total_bytes
+                # if sourceAddress == 'local':
+                #     try:
+                #         local_bytes += int(replySizeInBytes)
+                #     except:
+                #         total_bytes
+                # if sourceAddress == 'remote':
+                #     try:
+                #         remote_bytes += int(replySizeInBytes)
+                #     except:
+                #         total_bytes
+
+
+                filetype = self.getFileType(requestFileName)
+                # if (filetype == "HTML"):
+                #     html += int(replySizeInBytes)
+                # elif (filetype == "Images"):
+                #     images += int(replySizeInBytes)
+                # elif (filetype == "Sound"):
+                #     sound += int(replySizeInBytes)
+                # elif (filetype == "Video"):
+                #     video += int(replySizeInBytes)
+                # elif (filetype == "Formatted"):
+                #     formatted += int(replySizeInBytes)
+                # elif (filetype == "Dynamic"):
+                #     dynamic += int(replySizeInBytes)
+                # else:
+                #     others += int(replySizeInBytes)
+
+                filename_list.append(filetype)
+                filetype2 = requestFileName.split('.',1)
+                
+                unique_list.append(requestFileName)
+                try:
+                    unique_bytes[requestFileName] += int(replySizeInBytes)
+                except:
+                    unique_bytes[requestFileName] = int(replySizeInBytes)
+
+                    
+
             
+
             ################## From Here, implement your parser ##################
             # Inside the for loop, do simple variable assignments & modifications
             # Please do not add for loop/s
@@ -108,7 +150,7 @@ class Parser:
             #print('{0} , {1} , {2} , {3} , {4} , {5} '.format(sourceAddress,timeStr,requestMethod,requestFileName,responseCode, replySizeInBytes),end="")
             
             # Assigns & prints format type. Please comment print statement.
-            fileType = self.getFileType(requestFileName)
+            #fileType = self.getFileType(requestFileName)
             #print(' , {0}'.format(fileType))
 
             # Q1: Write a condition to identify a start date and an end date.
@@ -126,14 +168,32 @@ class Parser:
         #print(delta.days)
         #print(requests/int(delta.days))
         #print(total_bytes)
+        #print(html, images, sound, video, formatted, dynamic, others)
         #print(total_bytes/int(delta.days))
-        #d = {}
-        #for item in request_list:
-           # d[item] = d.get(item, 0) +1
-        #print(d)
+        d = {}
+        for item in unique_list:
+            d[item] = d.get(item, 0) +1
+        
+        unique_total = 0
+        for key, value in d.items():
+            if value == 1:
+               unique_total += unique_bytes.get(key)
+                
+        print((unique_total/total_bytes)*100)
+        #res = Counter(d.values())
+        #print(len(d))
+        #print(1901/len(d)*100)
+        # bytes_total = 0
+        # for item.key() in unique_bytes:
+        #     if item.key() == 1:
+        #         bytes_total += item.value()
 
-        print('local', (local_bytes/total_bytes)*100)
-        print('remote', (remote_bytes/total_bytes)*100)
+        # print(bytes_total)
+        
+        # print(1051781504/268176,3951539030/285517,101293073/588,908004217/8288,1788151744/3795,1091007/1827,144407633/232)
+        # print(len(filename_list))
+        # print('local', (local_bytes/total_bytes)*100)
+        # print('remote', (remote_bytes/total_bytes)*100)
 
     def getFileType(self, URI):
         if URI.endswith('/') or URI.endswith('.') or URI.endswith('..'):
